@@ -7,3 +7,10 @@ A simple app to create quote posters.
 ```bash
 npm run dev
 ```
+
+
+## Deploy to Netlify
+
+```bash
+netlify deploy --build --prod      
+```
