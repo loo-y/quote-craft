@@ -10,7 +10,7 @@ const fonts = [
     { name: 'American Typewriter', value: 'American Typewriter, serif' },
     { name: 'Courier', value: 'Courier, monospace' },
     { name: 'Special Elite', value: 'Special Elite, cursive' },
-    { name: 'Huiwen Mincho', value: '"Huiwen Mincho", sans-serif' },
+    { name: 'Huiwen Mincho', value: '"Huiwen Mincho"' },
 ]
 
 export const action: ActionFunction = async ({ request }) => {

@@ -5,6 +5,9 @@ import type { LoaderFunction } from '@remix-run/node'
 import { Button } from '~/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
 import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image'
+import Loading from '~/components/Loading'
+// @ts-ignore
+import FontFaceObserver from 'fontfaceobserver'
 
 const backgroundColors = [
     { enName: 'Deep Navy', name: '深海军蓝', value: 'bg-[#1a2a3a]', textColor: 'text-gray-200' },
@@ -55,11 +58,25 @@ export default function Craft() {
 
     const navigate = useNavigate()
 
+    // useEffect(() => {
+    //     if (quote) {
+    //         setIsLoading(false)
+    //     }
+    // }, [quote])
+
     useEffect(() => {
-        if (quote) {
-            setIsLoading(false)
-        }
-    }, [quote])
+        const font = new FontFaceObserver('Huiwen Mincho')
+
+        font.load(null, 60000)
+            .then(() => {
+                setIsLoading(false)
+            })
+            .catch((error: any) => {
+                console.error('Failed to load font:', error)
+                // 处理字体加载失败的情况，例如显示错误信息或使用默认字体
+                setIsLoading(false) // 即使加载失败，也要设置 fontsLoaded 为 true，以避免 loading 状态一直显示
+            })
+    }, [])
 
     useEffect(() => {
         const width = canvasRef?.current?.offsetWidth || 0
@@ -101,89 +118,91 @@ export default function Craft() {
         navigate('/')
     }
 
-    if (isLoading) {
-        return <div>Loading...</div>
-    }
+    // if (isLoading) {
+    //     return <div>Loading...</div>
+    // }
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
-            <div className="flex-grow flex items-center justify-center p-4">
-                <div
-                    ref={canvasRef}
-                    className={`relative w-full h-full max-w-2xl aspect-[3/4] rounded-2xl shadow-2xl overflow-hidden  ${bgColor}`}
-                >
+            <Loading show={isLoading} content="loading...">
+                <div className="flex-grow flex items-center justify-center p-4">
                     <div
-                        className={`relative z-10 w-full h-full flex ${textPosition} p-8`}
-                        style={{ fontFamily: font as string }}
+                        ref={canvasRef}
+                        className={`relative w-full h-full max-w-2xl aspect-[3/4] rounded-2xl shadow-2xl overflow-hidden  ${bgColor}`}
                     >
-                        <div className="max-w-lg">
-                            <p
-                                className={`text-4xl mb-8 leading-tight ${textColor} drop-shadow-sm`}
-                                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}
-                            >
-                                {quote?.split('\\n').map((line, index) => (
-                                    <React.Fragment key={index}>
-                                        {line}
-                                        {index < quote.split('\\n').length - 1 && <br />}
-                                    </React.Fragment>
-                                ))}
-                            </p>
-                            {author && (
+                        <div
+                            className={`relative z-10 w-full h-full flex ${textPosition} p-8`}
+                            style={{ fontFamily: font as string }}
+                        >
+                            <div className="max-w-lg">
                                 <p
-                                    className={`text-right text-2xl ${textColor} drop-shadow-sm`}
-                                    style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)', opacity: '0.9' }}
+                                    className={`text-4xl mb-8 leading-tight ${textColor} drop-shadow-sm`}
+                                    style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}
                                 >
-                                    - {author}
+                                    {quote?.split('\\n').map((line, index) => (
+                                        <React.Fragment key={index}>
+                                            {line}
+                                            {index < quote.split('\\n').length - 1 && <br />}
+                                        </React.Fragment>
+                                    ))}
                                 </p>
-                            )}
+                                {author && (
+                                    <p
+                                        className={`text-right text-2xl ${textColor} drop-shadow-sm`}
+                                        style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)', opacity: '0.9' }}
+                                    >
+                                        - {author}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {/* <div className="fixed bottom-0 left-0 right-0 bg-white p-4 flex justify-between items-center"> */}
-            <div className="flex flex-col p-4 space-y-4 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-4">
-                <Button onClick={handleBack} variant="outline" className="w-full sm:w-auto">
-                    Back
-                </Button>
-                {/* <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"> */}
-                <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-                    <Select
-                        value={bgColor}
-                        onValueChange={value => {
-                            const selectedColor =
-                                backgroundColors.find(color => color.value === value) || backgroundColors[0]
-                            setBgColor(selectedColor.value)
-                            setTextColor(selectedColor.textColor)
-                        }}
-                    >
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Background Color" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {backgroundColors.map(color => (
-                                <SelectItem key={color.value} value={color.value}>
-                                    {color.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={textPosition} onValueChange={value => setTextPosition(value)}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Text Position" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {textPositions.map(position => (
-                                <SelectItem key={position.value} value={position.value}>
-                                    {position.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                {/* <div className="fixed bottom-0 left-0 right-0 bg-white p-4 flex justify-between items-center"> */}
+                <div className="flex flex-col p-4 space-y-4 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-4">
+                    <Button onClick={handleBack} variant="outline" className="w-full sm:w-auto">
+                        Back
+                    </Button>
+                    {/* <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"> */}
+                    <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+                        <Select
+                            value={bgColor}
+                            onValueChange={value => {
+                                const selectedColor =
+                                    backgroundColors.find(color => color.value === value) || backgroundColors[0]
+                                setBgColor(selectedColor.value)
+                                setTextColor(selectedColor.textColor)
+                            }}
+                        >
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Background Color" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {backgroundColors.map(color => (
+                                    <SelectItem key={color.value} value={color.value}>
+                                        {color.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={textPosition} onValueChange={value => setTextPosition(value)}>
+                            <SelectTrigger className="w-full sm:w-[180px]">
+                                <SelectValue placeholder="Text Position" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {textPositions.map(position => (
+                                    <SelectItem key={position.value} value={position.value}>
+                                        {position.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Button onClick={handleDownload} className="w-full sm:w-auto">
+                        Download Poster
+                    </Button>
                 </div>
-                <Button onClick={handleDownload} className="w-full sm:w-auto">
-                    Download Poster
-                </Button>
-            </div>
+            </Loading>
         </div>
     )
 }

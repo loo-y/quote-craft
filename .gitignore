@@ -3,3 +3,7 @@ node_modules
 /.cache
 /build
 .env
+.vercel
+.DS_Store
+# Local Netlify folder
+.netlify
